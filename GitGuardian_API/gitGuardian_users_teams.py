@@ -1,8 +1,5 @@
 import json
 import requests
-# import logging
-#
-# logger = logging.getLogger(__name__)
 
 GG_API_URL = "https://api.gitguardian.com/v1"
 
