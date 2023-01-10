@@ -13,7 +13,7 @@ class GetGitUsers(GitHubQuery):
             query($after: String, $org:String!){
    organization(login: $org) {
                     samlIdentityProvider {
-                        externalIdentities(first:100 , after:$after) {
+                        externalIdentities(first:100 , after:$after , membersOnly: true) {
                             pageInfo {
                                 endCursor startCursor hasNextPage
                             }
