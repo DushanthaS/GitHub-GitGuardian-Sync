@@ -94,3 +94,41 @@ def gg_update_member(token, member_id):
     response = requests.request("PATCH", url, headers=headers, data=payload)
     print(response)
     return handle_response(response)
+
+
+def get_gg_sources(token):
+    url = f"{GG_API_URL}/sources"
+    headers = create_headers(token)
+    response = requests.request("GET", url, headers=headers)
+    # Initial request to get the first page of results
+    sources = response.json()
+
+    # Get the cursor for the next page of results
+    link_header = response.headers.get('link')
+    cursor = re.search("cursor=([^>]+)", link_header).group(1) if link_header else None
+    l_next = re.search("next", link_header).group(0)
+    # Loop through pages of results while a cursor is returned
+    # pdb.set_trace()
+    while l_next == "next":
+        # Make the next request with the cursor
+        next_response_url = f"{GG_API_URL}/sources??cursor={cursor}"
+        next_response = requests.request("GET", next_response_url, headers=headers)
+        sources.extend(next_response.json())
+        link_header = next_response.headers.get('link')
+
+        try:
+            l_next = re.search("next", link_header).group(0)
+            cursor = re.search("cursor=([^>]+)", link_header).group(1) if link_header else None
+        except AttributeError:
+            break
+    gh_gg_dict = {i["external_id"]: i["id"] for i in sources}
+    return gh_gg_dict
+
+
+def update_team_perimeter(token, team_id, repo_id):
+    url = f"{GG_API_URL}/teams/{team_id}/sources"
+    payload = {"sources_to_add": repo_id}
+    headers = create_headers(token)
+    response = requests.request("POST", url, headers=headers, data=json.dumps(payload))
+    handle_response(response)
+    return response.status_code
